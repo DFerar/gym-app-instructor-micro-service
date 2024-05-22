@@ -23,10 +23,10 @@ public class WorkloadCalculationService {
      * This method is used to add a workload to an instructor. It first checks if the instructor already exists in the repository.
      * If the instructor exists, it updates the instructor's workload. If the instructor does not exist, it creates a new workload for the instructor.
      *
-     * @param entity The InstructorWorkloadEntity to which the workload is to be added.
+     * @param entity       The InstructorWorkloadEntity to which the workload is to be added.
      * @param trainingDate The date of the training.
-     * @param duration The duration of the training.
-     * @param actionType The type of action to be performed (ADD or DELETE).
+     * @param duration     The duration of the training.
+     * @param actionType   The type of action to be performed (ADD or DELETE).
      */
     public void addWorkload(InstructorWorkloadEntity entity, LocalDate trainingDate, int duration,
                             ActionType actionType) {
@@ -52,9 +52,9 @@ public class WorkloadCalculationService {
      * If it does, it processes the workload. If it does not, it creates a new workload.
      *
      * @param existingEntity The existing InstructorWorkloadEntity.
-     * @param trainingDate The date of the training.
-     * @param duration The duration of the training.
-     * @param actionType The type of action to be performed (ADD or DELETE).
+     * @param trainingDate   The date of the training.
+     * @param duration       The duration of the training.
+     * @param actionType     The type of action to be performed (ADD or DELETE).
      * @return The workload of the instructor.
      */
     private Map<Integer, Map<Integer, Integer>> getWorkload(InstructorWorkloadEntity existingEntity,
@@ -75,9 +75,9 @@ public class WorkloadCalculationService {
      * This method is used to create a new workload for a given month and year.
      *
      * @param duration The duration of the training.
-     * @param month The month of the training.
+     * @param month    The month of the training.
      * @param workload The workload map to which the new workload is to be added.
-     * @param year The year of the training.
+     * @param year     The year of the training.
      */
     private void createNewWorkload(int duration, int month, Map<Integer, Map<Integer, Integer>> workload, int year) {
         Map<Integer, Integer> monthWorkload = Map.of(month, duration);
@@ -89,11 +89,11 @@ public class WorkloadCalculationService {
      * If the action type is ADD, it adds the duration to the existing workload. If the action type is DELETE, it subtracts the duration from the existing workload.
      * If the workload for the month becomes 0 after deletion, it removes the month from the workload.
      *
-     * @param duration The duration of the training.
+     * @param duration   The duration of the training.
      * @param actionType The type of action to be performed (ADD or DELETE).
-     * @param workload The workload map to be processed.
-     * @param year The year of the training.
-     * @param month The month of the training.
+     * @param workload   The workload map to be processed.
+     * @param year       The year of the training.
+     * @param month      The month of the training.
      */
     private void processWorkload(int duration, ActionType actionType, Map<Integer, Map<Integer, Integer>> workload,
                                  int year, int month) {

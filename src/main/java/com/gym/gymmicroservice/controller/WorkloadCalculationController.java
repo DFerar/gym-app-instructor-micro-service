@@ -25,7 +25,7 @@ public class WorkloadCalculationController {
      *
      * @param requestDto The incoming request, containing the details of the workload to be added.
      *                   This should be a JSON object that includes the training date, training duration, and action type.
-     * @return ResponseEntity<Void> Returns a ResponseEntity with HTTP status 200 (OK) if the operation is successful.
+     * @return {@code ResponseEntity<Void>} Returns a ResponseEntity with HTTP status 200 (OK) if the operation is successful.
      */
     @PostMapping("/accept")
     public ResponseEntity<Void> acceptWorkload(@RequestBody AcceptWorkloadRequestDto requestDto) {

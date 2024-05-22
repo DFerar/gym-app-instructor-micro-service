@@ -31,19 +31,8 @@ public class Storage {
      *
      * @param username The username of the InstructorWorkloadEntity to be retrieved.
      * @return InstructorWorkloadEntity Returns the InstructorWorkloadEntity associated with the provided username.
-     * If no entity is found, it returns null.
      */
     public InstructorWorkloadEntity get(String username) {
         return storage.get(username);
-    }
-
-    /**
-     * This method is used to delete an InstructorWorkloadEntity from the storage.
-     * It uses the provided username as the key to remove the entity.
-     *
-     * @param username The username of the InstructorWorkloadEntity to be deleted.
-     */
-    public void delete(String username) {
-        storage.remove(username);
     }
 }
