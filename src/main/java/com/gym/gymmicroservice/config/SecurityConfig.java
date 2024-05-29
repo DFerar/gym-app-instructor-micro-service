@@ -1,9 +1,9 @@
 package com.gym.gymmicroservice.config;
 
+import com.gym.gymmicroservice.properties.CorsProperties;
 import com.gym.gymmicroservice.properties.JwtProperties;
 import com.gym.gymmicroservice.security.CustomConverter;
 import io.jsonwebtoken.Jwts;
-import java.util.List;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableScheduling
-@EnableConfigurationProperties(JwtProperties.class)
+@EnableConfigurationProperties({JwtProperties.class, CorsProperties.class})
 public class SecurityConfig {
     private final CustomConverter converter;
 
@@ -44,17 +44,17 @@ public class SecurityConfig {
      */
     @Bean
     @SneakyThrows
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CorsProperties corsProperties) {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .cors(httpSecurityCorsConfigurer -> {
                 UrlBasedCorsConfigurationSource source =
                     new UrlBasedCorsConfigurationSource();
                 CorsConfiguration config = new CorsConfiguration();
-                config.setAllowCredentials(true);
-                config.addAllowedOrigin("http://localhost**");
-                config.setAllowedHeaders(List.of("Content-Type", "Authorization"));
-                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
+                config.setAllowCredentials(corsProperties.getAllowCredentials());
+                config.addAllowedOrigin(corsProperties.getAllowedOrigins());
+                config.setAllowedHeaders(corsProperties.getAllowedHeaders());
+                config.setAllowedMethods(corsProperties.getAllowedMethods());
                 source.registerCorsConfiguration("/**", config);
             })
             .authorizeHttpRequests((requests) -> requests

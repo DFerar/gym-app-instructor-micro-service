@@ -1,5 +1,7 @@
 package com.gym.gymmicroservice.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -11,6 +13,7 @@ import com.gym.gymmicroservice.repository.WorkloadRepository;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,5 +59,122 @@ class WorkloadCalculationServiceTest {
         workloadCalculationService.addWorkload(entity, LocalDate.now(), 5, ActionType.ADD);
         // Then
         verify(workloadRepository, times(1)).save(any());
+    }
+
+    @Test
+    void shouldAddDurationWhenActionTypeIsAddAndCurrentDurationIsNotNull() {
+        // Given
+        int year = 2022;
+        int month = 1;
+        int duration = 5;
+        ActionType actionType = ActionType.ADD;
+        Map<Integer, Map<Integer, Integer>> workload = new HashMap<>();
+        Map<Integer, Integer> monthWorkload = new HashMap<>();
+        monthWorkload.put(month, duration);
+        workload.put(year, monthWorkload);
+        // When
+        workloadCalculationService.processWorkload(duration, actionType, workload, year, month);
+        // Then
+        assertThat(workload.get(year).get(month)).isEqualTo(duration * 2);
+    }
+
+    @Test
+    void shouldSubtractDurationWhenActionTypeIsDeleteAndCurrentDurationIsNotNull() {
+        // Given
+        int year = 2022;
+        int month = 1;
+        int duration = 5;
+        ActionType actionType = ActionType.DELETE;
+        Map<Integer, Map<Integer, Integer>> workload = new HashMap<>();
+        Map<Integer, Integer> monthWorkload = new HashMap<>();
+        monthWorkload.put(month, duration * 2);
+        workload.put(year, monthWorkload);
+        // When
+        workloadCalculationService.processWorkload(duration, actionType, workload, year, month);
+        // Then
+        assertThat(workload.get(year).get(month)).isEqualTo(duration);
+    }
+
+    @Test
+    void shouldRemoveMonthWhenDurationBecomesZeroAfterDeletionAndCurrentDurationIsNotNull() {
+        // Given
+        int year = 2022;
+        int month = 1;
+        int duration = 5;
+        ActionType actionType = ActionType.DELETE;
+        Map<Integer, Map<Integer, Integer>> workload = new HashMap<>();
+        Map<Integer, Integer> monthWorkload = new HashMap<>();
+        monthWorkload.put(month, duration);
+        workload.put(year, monthWorkload);
+        // When
+        workloadCalculationService.processWorkload(duration, actionType, workload, year, month);
+        // Then
+        assertThat(workload.get(year)).doesNotContainKey(month);
+    }
+
+    @Test
+    void shouldAddNewMonthWhenMonthDoesNotExistAndCurrentDurationIsNull() {
+        // Given
+        int year = 2022;
+        int month = 1;
+        int duration = 5;
+        ActionType actionType = ActionType.ADD;
+        Map<Integer, Map<Integer, Integer>> workload = new HashMap<>();
+        Map<Integer, Integer> monthWorkload = new HashMap<>();
+        workload.put(year, monthWorkload);
+        // When
+        workloadCalculationService.processWorkload(duration, actionType, workload, year, month);
+        // Then
+        assertThat(workload.get(year).get(month)).isEqualTo(duration);
+    }
+
+    @Test
+    void shouldAddNewYearWhenYearDoesNotExistAndCurrentDurationIsNull() {
+        // Given
+        int year = 2023;
+        int month = 1;
+        int duration = 5;
+        ActionType actionType = ActionType.ADD;
+        Map<Integer, Map<Integer, Integer>> workload = new HashMap<>();
+        Map<Integer, Integer> monthWorkload = new HashMap<>();
+        workload.put(year - 1, monthWorkload);
+        // When
+        workloadCalculationService.processWorkload(duration, actionType, workload, year, month);
+        // Then
+        assertThat(workload).containsKey(year);
+        assertThat(workload.get(year).get(month)).isEqualTo(duration);
+    }
+
+    @Test
+    void shouldAddDurationWhenActionTypeIsAddAndCurrentDurationIsNull() {
+        //Given
+        int year = 2022;
+        int month = 1;
+        int duration = 5;
+        ActionType actionType = ActionType.ADD;
+        Map<Integer, Map<Integer, Integer>> workload = new HashMap<>();
+        Map<Integer, Integer> monthWorkload = new HashMap<>();
+        workload.put(year, monthWorkload);
+        //When
+        workloadCalculationService.processWorkload(duration, actionType, workload, year, month);
+        //Then
+        assertThat(workload.get(year).get(month)).isEqualTo(duration);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenActionTypeIsDeleteAndCurrentDurationIsNull() {
+        //Given
+        int year = 2022;
+        int month = 1;
+        int duration = 5;
+        ActionType actionType = ActionType.DELETE;
+        Map<Integer, Map<Integer, Integer>> workload = new HashMap<>();
+        Map<Integer, Integer> monthWorkload = new HashMap<>();
+        workload.put(year, monthWorkload);
+        //When & Then
+        assertThatThrownBy(
+            () -> workloadCalculationService.processWorkload(duration, actionType, workload, year, month)).isInstanceOf(
+                NoSuchElementException.class)
+            .hasMessageContaining("Month not found in workload");
     }
 }
