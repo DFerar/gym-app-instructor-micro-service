@@ -57,7 +57,7 @@ public class WorkloadCalculationService {
      * @param month      The month of the training.
      */
     public void processWorkload(int duration, ActionType actionType, Map<Integer, Map<Integer, Integer>> workload,
-                                int year, int month) {
+                                int year, int month) { //TODO: to private
         var existingYear = workload.get(year);
         if (actionType == DELETE) {
             processDeleting(duration, month, existingYear);
@@ -84,7 +84,7 @@ public class WorkloadCalculationService {
                                Map<Integer, Integer> existingYear) {
         if (existingYear != null) {
             var currentDuration = existingYear.get(month);
-            if (currentDuration != null) {
+            if (currentDuration != null) { //TODO: reason
                 existingYear.put(month, currentDuration + duration);
             } else {
                 existingYear.put(month, duration);

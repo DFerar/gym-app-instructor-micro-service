@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
-public class MdcInterceptor implements HandlerInterceptor {
+public class MdcInterceptor implements HandlerInterceptor { //TODO: Test this class
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
