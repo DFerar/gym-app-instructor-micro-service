@@ -11,9 +11,12 @@ spring:
       bootstrap-servers: localhost:9092
       group-id: gym-group
       auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     bootstrap-servers: localhost:9092
     template:
       default-topic: gym-topic
+
 token:
   expiration: 30000000
   key: "53A73E5F1C4E0A2D3B5F2D784E6A1B423D6F247D1F6E5C3A596D635A753HY123ID1123"
@@ -30,5 +33,9 @@ cors:
     - Authorization
     - Content-Type
   allow-credentials: true
+logging:
+  level:
+    root: INFO
+    com.gym.gymmicroservice: DEBUG
 
 
