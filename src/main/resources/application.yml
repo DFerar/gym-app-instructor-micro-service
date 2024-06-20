@@ -3,9 +3,15 @@ server:
 spring:
   application:
     name: GymMicroserviceApplication
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      username: gym
+      password: gym
+      auto-index-creation: true
+      uri: mongodb://gym:gym@localhost:27017
+      authentication-database: gym
   kafka:
     consumer:
       bootstrap-servers: localhost:9092
