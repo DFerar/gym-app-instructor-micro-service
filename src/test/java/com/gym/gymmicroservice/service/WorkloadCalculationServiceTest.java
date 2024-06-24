@@ -9,11 +9,12 @@ import static org.mockito.Mockito.when;
 
 import com.gym.gymmicroservice.dto.request.ActionType;
 import com.gym.gymmicroservice.entity.InstructorWorkloadEntity;
+import com.gym.gymmicroservice.entity.MonthEntity;
+import com.gym.gymmicroservice.entity.YearEntity;
 import com.gym.gymmicroservice.repository.WorkloadRepository;
+
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
@@ -49,10 +50,10 @@ class WorkloadCalculationServiceTest {
         // Given
         InstructorWorkloadEntity entity = new InstructorWorkloadEntity();
         entity.setUsername(RandomStringUtils.randomAlphabetic(10));
-        Map<Integer, Map<Integer, Integer>> workload = new HashMap<>();
-        Map<Integer, Integer> monthWorkload = new HashMap<>();
-        monthWorkload.put(1, 5);
-        workload.put(2022, monthWorkload);
+        List<YearEntity> workload = new ArrayList<>();
+        List<MonthEntity> monthWorkload = new ArrayList<>();
+        monthWorkload.add(new MonthEntity(1, 5));
+        workload.add(new YearEntity(2022, monthWorkload));
         entity.setWorkload(workload);
 
         when(workloadRepository.findByUsername(any())).thenReturn(entity);
@@ -63,119 +64,115 @@ class WorkloadCalculationServiceTest {
     }
 
     @Test
-    void shouldAddDurationWhenActionTypeIsAddAndCurrentDurationIsNotNull() {
+    void shouldSubtractWorkloadWhenInstructorExists() {
         // Given
-        int year = 2022;
-        int month = 1;
-        int duration = 5;
-        ActionType actionType = ActionType.ADD;
-        Map<Integer, Map<Integer, Integer>> workload = new HashMap<>();
-        Map<Integer, Integer> monthWorkload = new HashMap<>();
-        monthWorkload.put(month, duration);
-        workload.put(year, monthWorkload);
+        InstructorWorkloadEntity entity = new InstructorWorkloadEntity();
+        entity.setUsername(RandomStringUtils.randomAlphabetic(10));
+        List<YearEntity> workload = new ArrayList<>();
+        List<MonthEntity> monthWorkload = new ArrayList<>();
+        monthWorkload.add(new MonthEntity(1, 5));
+        workload.add(new YearEntity(2022, monthWorkload));
+        entity.setWorkload(workload);
+
+        when(workloadRepository.findByUsername(any())).thenReturn(entity);
         // When
-        workloadCalculationService.processWorkload(duration, actionType, workload, year, month);
+        workloadCalculationService.addWorkload(entity, LocalDate.of(2022, 1, 1), 3, ActionType.DELETE);
         // Then
-        assertThat(workload.get(year).get(month)).isEqualTo(duration * 2);
+        verify(workloadRepository, times(1)).save(any());
+        assertThat(entity.getWorkload().get(0).getMonths().get(0).getWorkload()).isEqualTo(2);
     }
 
     @Test
-    void shouldSubtractDurationWhenActionTypeIsDeleteAndCurrentDurationIsNotNull() {
+    void shouldThrowExceptionWhenInstructorExistsAndWorkloadIsNull() {
         // Given
-        int year = 2022;
-        int month = 1;
-        int duration = 5;
-        ActionType actionType = ActionType.DELETE;
-        Map<Integer, Map<Integer, Integer>> workload = new HashMap<>();
-        Map<Integer, Integer> monthWorkload = new HashMap<>();
-        monthWorkload.put(month, duration * 2);
-        workload.put(year, monthWorkload);
+        InstructorWorkloadEntity entity = new InstructorWorkloadEntity();
+        entity.setUsername(RandomStringUtils.randomAlphabetic(10));
+        entity.setWorkload(null);
+
+        when(workloadRepository.findByUsername(any())).thenReturn(entity);
         // When
-        workloadCalculationService.processWorkload(duration, actionType, workload, year, month);
-        // Then
-        assertThat(workload.get(year).get(month)).isEqualTo(duration);
+        assertThatThrownBy(() -> workloadCalculationService.addWorkload(entity, LocalDate.now(), 5, ActionType.ADD))
+                .isInstanceOf(NullPointerException.class);
     }
 
     @Test
-    void shouldRemoveMonthWhenDurationBecomesZeroAfterDeletionAndCurrentDurationIsNotNull() {
+    void shouldThrowExceptionWhenInstructorExistsAndYearIsNull() {
         // Given
-        int year = 2022;
-        int month = 1;
-        int duration = 5;
-        ActionType actionType = ActionType.DELETE;
-        Map<Integer, Map<Integer, Integer>> workload = new HashMap<>();
-        Map<Integer, Integer> monthWorkload = new HashMap<>();
-        monthWorkload.put(month, duration);
-        workload.put(year, monthWorkload);
+        InstructorWorkloadEntity entity = new InstructorWorkloadEntity();
+        entity.setUsername(RandomStringUtils.randomAlphabetic(10));
+        List<YearEntity> workload = new ArrayList<>();
+        List<MonthEntity> monthWorkload = new ArrayList<>();
+        monthWorkload.add(new MonthEntity(1, 5));
+        workload.add(new YearEntity(null, monthWorkload));
+        entity.setWorkload(workload);
+
+        when(workloadRepository.findByUsername(any())).thenReturn(entity);
         // When
-        workloadCalculationService.processWorkload(duration, actionType, workload, year, month);
-        // Then
-        assertThat(workload.get(year)).doesNotContainKey(month);
+        assertThatThrownBy(() -> workloadCalculationService.addWorkload(entity, LocalDate.now(), 5, ActionType.ADD))
+                .isInstanceOf(NullPointerException.class);
     }
 
     @Test
-    void shouldAddNewMonthWhenMonthDoesNotExistAndCurrentDurationIsNull() {
+    void shouldThrowExceptionWhenDurationBecomesNegative() {
         // Given
-        int year = 2022;
-        int month = 1;
-        int duration = 5;
-        ActionType actionType = ActionType.ADD;
-        Map<Integer, Map<Integer, Integer>> workload = new HashMap<>();
-        Map<Integer, Integer> monthWorkload = new HashMap<>();
-        workload.put(year, monthWorkload);
+        InstructorWorkloadEntity entity = new InstructorWorkloadEntity();
+        entity.setUsername(RandomStringUtils.randomAlphabetic(10));
+        List<YearEntity> workload = new ArrayList<>();
+        List<MonthEntity> monthWorkload = new ArrayList<>();
+        monthWorkload.add(new MonthEntity(1, 5));
+        workload.add(new YearEntity(2022, monthWorkload));
+        entity.setWorkload(workload);
         // When
-        workloadCalculationService.processWorkload(duration, actionType, workload, year, month);
-        // Then
-        assertThat(workload.get(year).get(month)).isEqualTo(duration);
+        assertThatThrownBy(() -> workloadCalculationService.addWorkload(entity, LocalDate.now(), 6, ActionType.DELETE))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    void shouldAddNewYearWhenYearDoesNotExistAndCurrentDurationIsNull() {
+    void shouldThrowExceptionWhenTypeIsDeleteAndWorkloadIsNull() {
         // Given
-        int year = 2023;
-        int month = 1;
-        int duration = 5;
-        ActionType actionType = ActionType.ADD;
-        Map<Integer, Map<Integer, Integer>> workload = new HashMap<>();
-        Map<Integer, Integer> monthWorkload = new HashMap<>();
-        workload.put(year - 1, monthWorkload);
+        InstructorWorkloadEntity entity = new InstructorWorkloadEntity();
+        entity.setUsername(RandomStringUtils.randomAlphabetic(10));
+        entity.setWorkload(null);
         // When
-        workloadCalculationService.processWorkload(duration, actionType, workload, year, month);
+        assertThatThrownBy(() -> workloadCalculationService.addWorkload(entity, LocalDate.now(), 5, ActionType.DELETE))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void shouldUpdateWorkloadIfMonthAlreadyExists() {
+        // Given
+        InstructorWorkloadEntity entity = new InstructorWorkloadEntity();
+        entity.setUsername(RandomStringUtils.randomAlphabetic(10));
+        List<YearEntity> workload = new ArrayList<>();
+        List<MonthEntity> monthWorkload = new ArrayList<>();
+        monthWorkload.add(new MonthEntity(1, 5));
+        workload.add(new YearEntity(2022, monthWorkload));
+        entity.setWorkload(workload);
+
+        when(workloadRepository.findByUsername(any())).thenReturn(entity);
+        // When
+        workloadCalculationService.addWorkload(entity, LocalDate.of(2022, 1, 3), 5, ActionType.ADD);
         // Then
-        assertThat(workload).containsKey(year);
-        assertThat(workload.get(year).get(month)).isEqualTo(duration);
+        verify(workloadRepository, times(1)).save(any());
+        assertThat(entity.getWorkload().get(0).getMonths().get(0).getWorkload()).isEqualTo(10);
     }
 
     @Test
-    void shouldAddDurationWhenActionTypeIsAddAndCurrentDurationIsNull() {
-        //Given
-        int year = 2022;
-        int month = 1;
-        int duration = 5;
-        ActionType actionType = ActionType.ADD;
-        Map<Integer, Map<Integer, Integer>> workload = new HashMap<>();
-        Map<Integer, Integer> monthWorkload = new HashMap<>();
-        workload.put(year, monthWorkload);
-        //When
-        workloadCalculationService.processWorkload(duration, actionType, workload, year, month);
-        //Then
-        assertThat(workload.get(year).get(month)).isEqualTo(duration);
-    }
+    void shouldCreateNewMonthWhenYearExistsAndMonthNot() {
+        // Given
+        InstructorWorkloadEntity entity = new InstructorWorkloadEntity();
+        entity.setUsername(RandomStringUtils.randomAlphabetic(10));
+        List<YearEntity> workload = new ArrayList<>();
+        List<MonthEntity> monthWorkload = new ArrayList<>();
+        monthWorkload.add(new MonthEntity(1, 5));
+        workload.add(new YearEntity(2022, monthWorkload));
+        entity.setWorkload(workload);
 
-    @Test
-    void shouldThrowExceptionWhenActionTypeIsDeleteAndCurrentDurationIsNull() {
-        //Given
-        int year = 2022;
-        int month = 1;
-        int duration = 5;
-        ActionType actionType = ActionType.DELETE;
-        Map<Integer, Map<Integer, Integer>> workload = new HashMap<>();
-        Map<Integer, Integer> monthWorkload = new HashMap<>();
-        workload.put(year, monthWorkload);
-        //When & Then
-        assertThatThrownBy(
-            () -> workloadCalculationService.processWorkload(duration, actionType, workload, year, month)).isInstanceOf(
-                NoSuchElementException.class)
-            .hasMessageContaining("Month not found in workload");
+        when(workloadRepository.findByUsername(any())).thenReturn(entity);
+        // When
+        workloadCalculationService.addWorkload(entity, LocalDate.of(2022, 2, 3), 5, ActionType.ADD);
+        // Then
+        verify(workloadRepository, times(1)).save(any());
+        assertThat(entity.getWorkload().get(0).getMonths().size()).isEqualTo(2);
     }
 }

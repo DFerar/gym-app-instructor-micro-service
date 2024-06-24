@@ -10,5 +10,6 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: gym
       MONGO_INITDB_ROOT_PASSWORD: gym
+      MONGO_INITDB_DATABASE: gym
 volumes:
   mongo_data:
