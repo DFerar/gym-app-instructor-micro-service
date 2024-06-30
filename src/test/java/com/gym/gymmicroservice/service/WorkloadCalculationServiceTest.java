@@ -12,10 +12,9 @@ import com.gym.gymmicroservice.entity.InstructorWorkloadEntity;
 import com.gym.gymmicroservice.entity.MonthEntity;
 import com.gym.gymmicroservice.entity.YearEntity;
 import com.gym.gymmicroservice.repository.WorkloadRepository;
-
 import java.time.LocalDate;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -92,7 +91,7 @@ class WorkloadCalculationServiceTest {
         when(workloadRepository.findByUsername(any())).thenReturn(entity);
         // When
         assertThatThrownBy(() -> workloadCalculationService.addWorkload(entity, LocalDate.now(), 5, ActionType.ADD))
-                .isInstanceOf(NullPointerException.class);
+            .isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -109,7 +108,7 @@ class WorkloadCalculationServiceTest {
         when(workloadRepository.findByUsername(any())).thenReturn(entity);
         // When
         assertThatThrownBy(() -> workloadCalculationService.addWorkload(entity, LocalDate.now(), 5, ActionType.ADD))
-                .isInstanceOf(NullPointerException.class);
+            .isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -124,7 +123,7 @@ class WorkloadCalculationServiceTest {
         entity.setWorkload(workload);
         // When
         assertThatThrownBy(() -> workloadCalculationService.addWorkload(entity, LocalDate.now(), 6, ActionType.DELETE))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -135,7 +134,7 @@ class WorkloadCalculationServiceTest {
         entity.setWorkload(null);
         // When
         assertThatThrownBy(() -> workloadCalculationService.addWorkload(entity, LocalDate.now(), 5, ActionType.DELETE))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

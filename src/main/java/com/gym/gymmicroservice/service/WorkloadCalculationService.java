@@ -9,8 +9,8 @@ import com.gym.gymmicroservice.entity.MonthEntity;
 import com.gym.gymmicroservice.entity.YearEntity;
 import com.gym.gymmicroservice.repository.WorkloadRepository;
 import java.time.LocalDate;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -56,15 +56,15 @@ public class WorkloadCalculationService {
      * @return The workload of the instructor.
      */
     private List<YearEntity> updateWorkload(InstructorWorkloadEntity existingEntity,
-                                                               LocalDate trainingDate, int duration,
-                                                               ActionType actionType) {
+                                            LocalDate trainingDate, int duration,
+                                            ActionType actionType) {
         Integer year = trainingDate.getYear();
         Integer month = trainingDate.getMonthValue();
         List<YearEntity> workload = existingEntity.getWorkload();
         YearEntity yearEntity = workload.stream()
-                .filter(y -> y.getYear().equals(year))
-                .findFirst()
-                .orElse(null);
+            .filter(y -> y.getYear().equals(year))
+            .findFirst()
+            .orElse(null);
         if (yearEntity != null) {
             processWorkloadForExistingYear(duration, actionType, yearEntity, month);
         } else {
@@ -73,11 +73,12 @@ public class WorkloadCalculationService {
         return workload;
     }
 
-    private void processWorkloadForExistingYear(int duration, ActionType actionType, YearEntity yearEntity, Integer month) {
+    private void processWorkloadForExistingYear(int duration, ActionType actionType, YearEntity yearEntity,
+                                                Integer month) {
         MonthEntity monthEntity = yearEntity.getMonths().stream()
-                .filter(m -> m.getMonth().equals(month))
-                .findFirst()
-                .orElse(null);
+            .filter(m -> m.getMonth().equals(month))
+            .findFirst()
+            .orElse(null);
         if (monthEntity != null) {
             processWorkload(duration, actionType, monthEntity);
         } else {
@@ -123,7 +124,8 @@ public class WorkloadCalculationService {
      * @param duration     The duration of the training.
      * @return The new workload map.
      */
-    private List<YearEntity> createNewWorkloadForMonthAndYear(LocalDate trainingDate, int duration, ActionType actionType) {
+    private List<YearEntity> createNewWorkloadForMonthAndYear(LocalDate trainingDate, int duration,
+                                                              ActionType actionType) {
         if (actionType == DELETE) {
             throw new IllegalArgumentException("You cannot delete a workload for a non-existing instructor workload");
         }
