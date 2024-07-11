@@ -16,5 +16,6 @@ public class BaseItTest {
 
         System.setProperty("spring.data.mongodb.uri", mongoDBContainer.getReplicaSetUrl());
         System.setProperty("spring.kafka.bootstrap-servers", kafkaContainer.getBootstrapServers());
+        System.setProperty("spring.kafka.consumer.bootstrap-servers", kafkaContainer.getBootstrapServers());
     }
 }

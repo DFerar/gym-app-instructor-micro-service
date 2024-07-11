@@ -1,5 +1,6 @@
 package com.gym.gymmicroservice.integration.common;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,10 +19,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest
-@TestPropertySource(properties = {
-    "spring.kafka.consumer.key-deserializer=org.apache.kafka.common.serialization.StringDeserializer",
-    "spring.kafka.consumer.value-deserializer=org.apache.kafka.common.serialization.StringDeserializer"
-})
 public class WorkloadCalculationTest extends BaseItTest {
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
@@ -52,6 +49,7 @@ public class WorkloadCalculationTest extends BaseItTest {
         InstructorWorkloadEntity entity = workloadRepository.findByUsername(request.getUsername());
 
         assertThat(entity).isNotNull();
+        assertThat(entity.getWorkload().size()).isEqualTo(1);
         assertThat(entity.getWorkload().get(0).getMonths().get(0).getWorkload()).isEqualTo(2);
         assertThat(entity.getWorkload().get(0).getMonths().get(0).getMonth()).isEqualTo(1);
         assertThat(entity.getWorkload().get(0).getYear()).isEqualTo(2021);
